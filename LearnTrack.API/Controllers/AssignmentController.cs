@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using LearnTrack.Core.Entities;
 using LearnTrack.Infrastructure.Data;
-using LearnTrack.Core.Entities;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Text.Json;
 
 namespace LearnTrack.API.Controllers;
@@ -39,7 +40,7 @@ public class AssignmentController : ControllerBase
         _context.CourseAssignments.Add(assignment);
 
         // 🔥 Audit Log (UNCHANGED LOGIC)
-        var userIdClaim = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         var audit = new AuditLog
         {
