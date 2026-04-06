@@ -2,7 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using LearnTrack.Infrastructure.Data;
+using Microsoft.OpenApi.Models;
 using System.Text;
+using LearnTrack.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,13 +12,23 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
         options.JsonSerializerOptions.PropertyNamingPolicy = null);
+// ✅ 1.1 Email Service
+builder.Services.AddScoped<EmailService>();
 
 // ✅ 2. Database (PostgreSQL)
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 // ✅ 3. Swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "LearnTrack API",
+        Version = "v1"
+
+    });
+});
 
 // ✅ 4. JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -51,7 +63,12 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "LearnTrack API V1");
+        c.RoutePrefix = "swagger"; // optional but safe
+    });
 }
 
 // ✅ 7. Middleware order (VERY IMPORTANT)
