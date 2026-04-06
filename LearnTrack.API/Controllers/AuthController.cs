@@ -24,8 +24,14 @@ public class AuthController : ControllerBase
     [HttpPost("Login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest login)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == login.Email);
-        if (user == null) return Unauthorized("Invalid Credentials");
+        var user = await _context.Users
+     .FirstOrDefaultAsync(u => u.Email == login.Email);
+
+        if (user == null)
+            return Unauthorized("Invalid Credentials");
+
+        if (!BCrypt.Net.BCrypt.Verify(login.Password, user.PasswordHash))
+            return Unauthorized("Invalid Credentials");
 
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]!);

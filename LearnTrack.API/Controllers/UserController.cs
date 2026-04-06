@@ -38,6 +38,7 @@ public class UserController : ControllerBase
     }
 
     // ✅ CREATE USER
+    [AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> CreateUser(User user)
     {
@@ -47,7 +48,7 @@ public class UserController : ControllerBase
         user.Id = Guid.NewGuid(); // ensure id
         user.CreatedAt = DateTime.UtcNow;
         user.IsActive = true;
-
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
@@ -64,7 +65,7 @@ public class UserController : ControllerBase
             return NotFound("User not found");
 
         user.Email = updatedUser.Email;
-        user.PasswordHash = updatedUser.PasswordHash;
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(updatedUser.PasswordHash);
         user.RoleId = updatedUser.RoleId;
         user.IsActive = updatedUser.IsActive;
 
