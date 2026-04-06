@@ -27,7 +27,6 @@ public class AuthController : ControllerBase
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == login.Email);
         if (user == null) return Unauthorized("Invalid Credentials");
 
-        // Professional Token Generation Logic
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]!);
         var tokenDescriptor = new SecurityTokenDescriptor
@@ -44,6 +43,17 @@ public class AuthController : ControllerBase
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return Ok(new { Token = tokenHandler.WriteToken(token) });
+    }
+
+    [HttpPost("VerifyInvitation")]
+    public async Task<IActionResult> VerifyInvitation([FromQuery] Guid token)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.InvitationToken == token);
+        
+        if (user == null || user.TokenExpiry < DateTime.UtcNow)
+            return BadRequest("Invitation link has expired or is invalid.");
+
+        return Ok(new { Message = "Invitation Valid", Email = user.Email });
     }
 }
 

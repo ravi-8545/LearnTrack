@@ -17,6 +17,12 @@ public class User
     [Column("roleid")]
     public Guid RoleId { get; set; }
 
+    [Column("invitationtoken")]
+    public Guid? InvitationToken { get; set; }
+
+    [Column("tokenexpiry")]
+    public DateTime? TokenExpiry { get; set; }
+
     // Navigation Property
     public Role Role { get; set; } = null!;
 

@@ -12,6 +12,10 @@ public class AppDbContext : DbContext
     public DbSet<Employee> Employees { get; set; }
     public DbSet<CourseAssignment> CourseAssignments { get; set; }
     public DbSet<AuditLog> AuditLogs { get; set; }
+    public DbSet<Document> Documents { get; set; }
+    public DbSet<Course> Courses { get; set; }
+    public DbSet<CourseCategory> CourseCategories { get; set; }
+    public DbSet<CourseProvider> CourseProviders { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
