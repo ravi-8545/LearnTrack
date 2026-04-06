@@ -14,9 +14,37 @@ builder.Services.AddControllers()
 // ✅ 2. Database (PostgreSQL)
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-// ✅ 3. Swagger
+
+// ✅ 3. Swagger with JWT Support (The "Modern" Way)
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    // We add the security definition using a simple string-based approach
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Enter your JWT token."
+    });
+
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 
 // ✅ 4. JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -54,11 +82,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// ✅ 7. Middleware order (VERY IMPORTANT)
 app.UseHttpsRedirection();
-
-app.UseAuthentication();   // 🔐 First authentication
-app.UseAuthorization();    // 🔐 Then authorization
+app.UseAuthentication();   
+app.UseAuthorization();    
 
 app.MapControllers();
 
