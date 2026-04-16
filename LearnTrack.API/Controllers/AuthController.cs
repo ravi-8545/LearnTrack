@@ -39,17 +39,22 @@ public class AuthController : ControllerBase
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new[] {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Email, user.Email) 
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
             }),
-            Expires = DateTime.UtcNow.AddHours(24),
+            Expires = DateTime.UtcNow.AddHours(
+                Convert.ToDouble(_config["Jwt:expiryhours"])),
             Issuer = _config["Jwt:Issuer"],
             Audience = _config["Jwt:Audience"],
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
-        return Ok(new { Token = tokenHandler.WriteToken(token) });
+        return Ok(new
+        {
+            accessToken = tokenHandler.WriteToken(token),
+            expiresIn = _config["Jwt:expiryhours"],
+            tokenType = "Bearer"
+        });
     }
 }
 
